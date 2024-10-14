@@ -1,0 +1,88 @@
+trigger: none
+
+pool:
+  vmImage: "windows-2019"
+
+variables:
+  - group: ALF-DR-Infra
+
+jobs:
+  - job:
+    steps:
+      - task: AzurePowerShell@5
+        inputs:
+          azureSubscription: "$(azureConnection)"
+          ScriptType: "FilePath"
+          ScriptPath: "Provisioning/gettags.ps1"
+          ScriptArguments: "-SubscriptionId 17835256-0d59-4286-9531-4cf962732ff4 -ResourceGroupName AUSPIAC00KRSG01"
+          azurePowerShellVersion: "LatestVersion"
+
+# App Service Plan 01          
+
+      - task: prodbbcreateappserviceplanV310@1
+        displayName: 'Create App Service Plan 01'
+        inputs:
+          var_resourceGroupName: "$(resourceGroupName)"
+          var_subscriptionId: '$(subscriptionId)'
+          var_location: "$(location)"
+          var_owner: "$(owner)"
+          var_chargeCode: "$(chargeCode)"
+          var_deploymentId: "$(deploymentId)"
+          var_environment: "$(environment)"
+          var_applicationServicePlanOS: "windows"
+          var_skuCode: "P1V3"
+          var_appServicePlanName: "AUSPIAC00KASP01"
+          ansibleTowerConn: "$(towerConnection)"
+          credentials: "$(tower.credential)"
+          var_omsSubscriptionId: "$(omsSubscriptionId)"
+          var_omsResourceGroup: "$(omsResourceGroup)"
+          var_omsWorkspaceName: "$(omsWorkspaceName)"
+          Wait: "Wait"
+
+# Web App 01          
+
+      - task: prodbbcreatewebappV230@1
+        displayName: 'Create Windows Web App 01'  
+        inputs:
+          var_resourceGroupName: "$(resourceGroupName)"
+          var_subscriptionId: '$(subscriptionId)'
+          var_location: "$(location)"
+          var_owner: "$(owner)"
+          var_chargeCode: "$(chargeCode)"
+          var_deploymentId: "$(deploymentId)"
+          var_environment: "$(environment)"
+          var_appServicePlanName: "AUSPIAC00KASP01"
+          var_framework: 'ASPNET|V4.8'
+          var_kind: 'app'
+          var_appInsightsName: 'AUSPIAC00KAAI01'
+          var_webAppName: "AUSPIAC00KWAP01"
+          var_omsSubscriptionId: "$(omsSubscriptionId)"
+          var_omsResourceGroup: "$(omsResourceGroup)"
+          var_omsWorkspaceName: "$(omsWorkspaceName)"
+          ansibleTowerConn: '$(towerConnection)'
+          credentials: '$(tower.credential)'
+          Wait: 'Wait'   
+      
+# function App
+      - task: prodbbcreateazurefunctionappV600@1
+        displayName: 'Provision of FunctionApp'
+        inputs:
+          ansibleTowerConn: '$(towerConnection)'
+          credentials: '$(tower.credential)'
+          var_subscriptionId: '$(subscriptionId)'
+          var_location: '$(location)'
+          var_resourceGroupName: '$(resourceGroupName)'
+          var_chargeCode: '$(chargeCode)'
+          var_owner: '$(owner)'
+          var_deploymentId: '$(deploymentId)'
+          var_environment: '$(environment)'
+          var_omsSubscriptionId: '$(omsSubscriptionId)'
+          var_omsResourceGroup: '$(omsResourceGroup)'
+          var_omsWorkspaceName: '$(omsWorkspaceName)'
+          var_framework: 'DOTNET|6.0'
+          var_storageAccountName: 'AUSPIAC00KSTA01'
+          var_appServicePlanName: 'AUSPIAC00KASP01'
+          var_appInsightsName: 'AUSPIAC00KAAI01'
+          Wait: 'Wait'
+
+
